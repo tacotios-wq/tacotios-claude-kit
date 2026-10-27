@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# md-view — convierte un .md a HTML con estilo dark bonito (tipo GitHub) y lo abre en el navegador
+# Uso: md-view <archivo.md>
+# Creado 2026-04-23 como reemplazo de MacDown (deprecated) / Obsidian (requiere vault) / Antigravity (renderiza mal)
+
+set -e
+
+IN="${1:-}"
+if [[ -z "$IN" ]]; then
+  echo "uso: md-view <archivo.md>" >&2
+  exit 1
+fi
+if [[ ! -f "$IN" ]]; then
+  echo "md-view: archivo no existe: $IN" >&2
+  exit 1
+fi
+
+BASENAME="$(basename "${IN%.md}")"
+OUT="/tmp/md-view-${BASENAME}.html"
+HEADER="$(dirname "$0")/md-view-header.html"
+
+if [[ ! -f "$HEADER" ]]; then
+  echo "md-view: falta el header CSS en $HEADER" >&2
+  exit 1
+fi
+
+pandoc "$IN" \
+  --standalone \
+  --toc \
+  --toc-depth=3 \
+  --metadata title="$BASENAME" \
+  --metadata lang=es \
+  -H "$HEADER" \
+  -o "$OUT"
+
+open "$OUT"
